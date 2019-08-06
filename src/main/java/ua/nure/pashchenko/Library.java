@@ -1,22 +1,21 @@
-package tiny;
+package ua.nure.pashchenko;
 
 import java.util.ArrayList;
-import java.util.Set;
 
 public class Library implements Room {
     private int readersInRoom = 0;
-    private int maxReadersInRoom = 2;
-    private int minReadersInRoom = 0;
-
 
     private ArrayList<Book> books;
 
     public synchronized void enter(Reader reader) {
+        int maxReadersInRoom = 2;
         while (readersInRoom >= maxReadersInRoom) {
             try {
                 wait();
             }
-            catch (InterruptedException ignored){}
+            catch (InterruptedException ex){
+                ex.printStackTrace();
+            }
         }
         readersInRoom++;
         reader.setLocation("library");
@@ -26,11 +25,14 @@ public class Library implements Room {
     }
 
     public synchronized void leave(Reader reader) {
+        int minReadersInRoom = 0;
         while (readersInRoom <= minReadersInRoom) {
             try {
                 wait();
             }
-            catch (InterruptedException ignored){}
+            catch (InterruptedException ex){
+                ex.printStackTrace();
+            }
         }
         readersInRoom--;
         reader.setLocation("building");
@@ -40,29 +42,29 @@ public class Library implements Room {
     }
 
 
-    public synchronized void giveBook(Reader reader, Book book) {
-        ArrayList<Book> books = reader.getBooks();
-        books.add(book);
-        reader.setBooks(books);
+    synchronized void giveBook(Reader reader, Book book) {
+        ArrayList<Book> readerBooks = reader.getBooks();
+        readerBooks.add(book);
+        reader.setBooks(readerBooks);
         books.remove(book);
         System.out.println("Reader " + reader.getName() + " has token the book "
                 + book.getId());
     }
 
-    public synchronized void returnBook(Reader reader, Book book) {
-        ArrayList<Book> books = reader.getBooks();
-        books.remove(book);
-        reader.setBooks(books);
+    synchronized void returnBook(Reader reader, Book book) {
+        ArrayList<Book> readerBooks = reader.getBooks();
+        readerBooks.remove(book);
+        reader.setBooks(readerBooks);
         books.add(book);
         System.out.println("Reader " + reader.getName() + " has returned the book "
                 + book.getId());
     }
 
-    public ArrayList<Book> getBooks() {
+    ArrayList<Book> getBooks() {
         return books;
     }
 
-    public void setBooks(ArrayList<Book> books) {
+    void setBooks(ArrayList<Book> books) {
         this.books = books;
     }
 }

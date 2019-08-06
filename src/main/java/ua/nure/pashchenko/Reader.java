@@ -1,4 +1,4 @@
-package tiny;
+package ua.nure.pashchenko;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,8 +13,7 @@ public class Reader implements Runnable {
     private ArrayList<Book> books;
 
     // actions
-  //  private final int DO_NOTHING = 0;
-    private final int GO_TO_LIBRARY = 0;
+    /*private final int GO_TO_LIBRARY = 0;
     private final int EXIT_LIBRARY = 1;
     private final int GO_TO_READINGROOM = 2;
     private final int EXIT_READINGROOM = 3;
@@ -22,28 +21,26 @@ public class Reader implements Runnable {
     private final int PICK_A_BOOK = 5;
     private final int READ_A_BOOK = 6;
     private final int RETURN_BOOK = 7;
-    private final int GO_TO_BUILDING = 8;
+    private final int GO_TO_BUILDING = 8; */
 
-    HashMap<String, int[]> movementMap = new HashMap<String, int[]>();
-
-
+    private HashMap<String, int[]> movementMap = new HashMap<>();
 
     Reader(Library library, Room readingRoom, String name) {
         this.library = library;
         this.readingRoom = readingRoom;
         this.name = name;
         location = "home";
-        books = new ArrayList<Book>();
+        books = new ArrayList<>();
 
-        movementMap.put("home", new int[]{ 6, 8});
-        movementMap.put("library", new int[]{ 1, 5, 7});
-        movementMap.put("building", new int[]{ 0, 2, 4});
-        movementMap.put("reading room", new int[]{ 3, 6});
+        movementMap.put("home", new int[]{6, 8});
+        movementMap.put("library", new int[]{1, 5, 5, 5, 7, 7});
+        movementMap.put("building", new int[]{0, 0, 2, 2, 2, 2, 2});
+        movementMap.put("reading room", new int[]{3, 6, 6, 6, 6, 6});
     }
 
     private int chooseAction() {
-        for(String loc : movementMap.keySet()) {
-            if(loc.equals(location)) {
+        for (String loc : movementMap.keySet()) {
+            if (loc.equals(location)) {
                 int[] moves = movementMap.get(loc);
                 return moves[new Random().nextInt(moves.length)];
             }
@@ -78,25 +75,28 @@ public class Reader implements Runnable {
                         Thread.sleep(5000);
                         break;
                     case 5:
-                        library.giveBook(Reader.this, library.getBooks().
-                                                            get(new Random().nextInt(library.
-                                                                    getBooks().size())));
-                        Thread.sleep(2000);
+                        if (library.getBooks().size() > 0) {
+                            library.giveBook(Reader.this, library.getBooks().
+                                    get(new Random().nextInt(library.
+                                            getBooks().size())));
+                            Thread.sleep(2000);
+                            if(Reader.this.books.get(books.size() - 1).isReaderRoomOnly()) {
+                                readAtReadingRoom(Reader.this.books.get(books.size() - 1));
+                            }
+                        }
                         break;
                     case 6:
-                        if(Reader.this.books.size() > 0) {
+                        if (Reader.this.books.size() > 0) {
                             System.out.println("Reader " + this.name + " is reading");
                             Thread.sleep(10000);
-                        }
-                        else break;
+                        } else break;
                         break;
                     case 7:
-                        if(Reader.this.books.size() > 0) {
+                        if (Reader.this.books.size() > 0) {
                             library.returnBook(Reader.this, Reader.this.getBooks().
                                     get(new Random().nextInt(Reader.this.
                                             getBooks().size())));
-                        }
-                        else break;
+                        } else break;
                         break;
                     case 8:
                         Reader.this.setLocation("building");
@@ -104,44 +104,40 @@ public class Reader implements Runnable {
                         break;
                 }
             }
-        }catch (InterruptedException ignored){}
+        } catch (InterruptedException ex) {
+            ex.printStackTrace();
+        }
     }
 
-    public String getName() {
+    private void readAtReadingRoom(Book book) {
+        try {
+            setLocation("reading room");
+            System.out.println("Reader " + this.name + " is reading the book " + book.getId() + " which is allowed to "
+                                + "read only in reading room");
+            Thread.sleep(10000);
+            setLocation("library");
+            library.returnBook(Reader.this, book);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+
+    }
+
+    String getName() {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
 
-    public ArrayList<Book> getBooks() {
+    ArrayList<Book> getBooks() {
         return books;
     }
 
-    public void setBooks(ArrayList<Book> books) {
+    void setBooks(ArrayList<Book> books) {
         this.books = books;
     }
 
-    public String getLocation() {
-        return location;
-    }
-
-    public void setLocation(String location) {
+    void setLocation(String location) {
         this.location = location;
     }
 }
- /*
- *   try {
-            library.enter(Reader.this);
-            Thread.sleep(2000);
-            library.giveBook(Reader.this, library.getBooks().get(new Random().nextInt(library.getBooks().size())));
-            Thread.sleep(1000);
-            library.leave(Reader.this);
-            readingRoom.enter(Reader.this);
-            Thread.sleep(5000);
-            readingRoom.leave(Reader.this);
-
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } */

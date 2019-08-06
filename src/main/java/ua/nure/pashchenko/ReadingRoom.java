@@ -1,11 +1,10 @@
-package tiny;
+package ua.nure.pashchenko;
 
 public class ReadingRoom implements Room {
     private int readersInRoom = 0;
-    private int maxReadersInRoom = 4;
-    private int minReadersInRoom = 0;
 
     public synchronized void enter(Reader reader) {
+        int maxReadersInRoom = 4;
         while (readersInRoom >= maxReadersInRoom) {
             try {
                 wait();
@@ -20,6 +19,7 @@ public class ReadingRoom implements Room {
     }
 
     public synchronized void leave(Reader reader) {
+        int minReadersInRoom = 0;
         while (readersInRoom <= minReadersInRoom) {
             try {
                 wait();
